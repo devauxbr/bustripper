@@ -31,7 +31,12 @@ public class BusStopsCallBack implements InvocationCallback<Response> {
             for(int i = 0; i< stops.length && i<10;i++) {
                 BusStop stop = stops[i];
                 boolean isLast = stop == stops[stops.length -1];
-                new Thread(new FindBusLinesForStop(stop.getId(), listener, isLast)).start();
+                /*
+                Bugfix #1b : only retrieve bus lines from entities of type "Stop"
+                 */
+                if ("Stop".equals(stop.getPlaceType())) {
+                    new Thread(new FindBusLinesForStop(stop.getId(), listener, isLast)).start();
+                }
             }
         } catch (IOException e) {
             listener.failedGettingTrips(e);

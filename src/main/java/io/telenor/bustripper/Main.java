@@ -3,7 +3,6 @@ package io.telenor.bustripper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +21,10 @@ public class Main {
             public synchronized void gotTrips(Set<BusTrip> trips, boolean done) {
                 allTrips.addAll(trips);
 
-                if(done || allTrips.size() >= maxtrips) {
+                /*
+                Bugfix #3 : easy fix -> print the result only once
+                 */
+                if(!this.done && (done || allTrips.size() >= maxtrips)) {
                     if (allTrips.isEmpty()) {
                         System.out.println("No trips found!");
                     }
@@ -61,12 +63,19 @@ public class Main {
                     System.out.print("> ");
                     try {
                         String searchterm = in.readLine();
-                        if("q" == searchterm || searchterm.length() == 0) {
+                        /*
+                        Bugfix #2 : Object#equals() method must be used to compare Object types :
+                         */
+                        if("q".equals(searchterm) || searchterm.length() == 0) {
                             System.exit(0);
                         }
                         System.out.println("Looking up " + searchterm);
+                        /*
+                         Bugfix #1a : replace any non literal character
+                          */
+                        String encodedSearchterm = searchterm.replaceAll("[^a-z A-Z]", "");
                         BustripWaiter waiter = new BustripWaiter();
-                        new Thread(new FindBusStop(waiter, searchterm)).start();
+                        new Thread(new FindBusStop(waiter, encodedSearchterm)).start();
                         waiter.waitForCompletion();
                     }
                     catch(IOException io) {
